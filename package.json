@@ -1,0 +1,26 @@
+{
+    "name": "ma-todolist",
+    "version": "0.1.0",
+    "main": "serveur.js",
+    "description": "Http server for rest api with nodeJs",
+    "dependencies": {
+        "bcrypt": "^3.0.6",
+        "body-parser": "~1.10.1",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "mysql2": "^1.7.0",
+        "sequelize": "^5.19.3",
+        "sqlite3": "^4.1.0"
+    },
+    "devDependencies": {
+        "mocha": "^6.2.1",
+        "nodemon": "^1.19.3"
+    },
+    "scripts": {
+        "start": "nodemon serveur.js",
+        "test": "mocha"
+    },
+    "author": "CK_coder",
+    "license": "ISC"
+}

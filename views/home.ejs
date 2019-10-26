@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Ma todolist</title>
+    <style>
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Ma todolist</h1>
+
+    <ul>
+        <% todolist.forEach(function(todo, index) { %>
+        <li><a href="/todo/delete/<%= index %>">✘</a> <%= todo.label %> [<%= todo.priority %>]
+            <% if(todo.status != 1) {%> <a href="/todo/update/<%= index %>">&#10003</a> <% } %></li>
+        <% }); %>
+    </ul>
+
+    <form action="/todo/add" method="post">
+        <p>
+            <label for="newtodo">Que dois-je faire ?</label>
+            <input type="text" required name="newtodo" id="newtodo" autofocus />
+            <input type="number" required name="prio" id="prio" min="0" max="5" />
+            <input type="submit" />
+        </p>
+    </form>
+</body>
+
+</html>
