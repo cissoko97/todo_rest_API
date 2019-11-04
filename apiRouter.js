@@ -8,11 +8,11 @@ exports.router = (function () {
 
     //Users routes
     apiRouter.route('/users/register').post(userController.register);
-    apiRouter.route('/users/login').get(userController.login);
-    apiRouter.route('/users/update').get(userController.update);
-    apiRouter.route('/users/logout').get(userController.logout);
+    apiRouter.route('/users/login').post(userController.login);
+    apiRouter.route('/users/update').put(userController.update);
+    //apiRouter.route('/users/logout').get(userController.logout);
 
-    //Products Routes
+    //Tasks Routes
     //apiRouter.route('/tasks/save').post(taskController.save);
     //apiRouter.route('/tasks/delete/:id').get(taskController.delete);
     //apiRouter.route('/tasks/update').get(taskController.update);
