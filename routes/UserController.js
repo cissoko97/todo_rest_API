@@ -7,6 +7,12 @@ const PASSWORD_REGEX = /(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{6,15})$/;
 const TAG = 'USERCONTROLLER';
 
 module.exports = {
+    /**
+     * 
+     * @param {*} req 
+     * @param {*} res 
+     */
+
     register: function (req, res) {
         console.log(TAG, `Register function`);
         //params
@@ -60,6 +66,11 @@ module.exports = {
             });
     },
 
+    /**
+     * 
+     * @param {*} req 
+     * @param {*} res 
+     */
     login: function (req, res) {
         console.log(TAG, `login function`);
         var user = {};
@@ -91,7 +102,38 @@ module.exports = {
             return res.status(500).json({ 'error': 'enable to verify user' })
         })
     },
-    update: function () {
+
+    /**
+     * 
+     * @param {*} req 
+     * @param {*} res 
+     */
+    update: function (req, res) {
         console.log(TAG, `update function`);
+    },
+
+    /**
+     * 
+     * @param {*} req 
+     * @param {*} res 
+     */
+    getUserProfile: function (req, res) {
+        var headerAuth = req.headers['authorization'];
+        var userId = jwtUtils.getUserId(headerAuth);
+        if (userId < 0)
+            return res.status(400).json({ 'error': 'wrong Token' });
+
+        models.User.findOne({
+            attributes: ['id', 'name', 'email', 'phone'],
+            where: { id: userId }
+        }).then(user => { 
+            if(user){
+                res.status(201).json(user);
+            }else{
+                res.status(404).json({'error':'user not found'})
+            }
+        }).catch(err => { 
+            res.status(500).json({'error':'cannot fetch user'})
+        })
     }
 }

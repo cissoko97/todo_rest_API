@@ -10,6 +10,7 @@ exports.router = (function () {
     apiRouter.route('/users/register').post(userController.register);
     apiRouter.route('/users/login').post(userController.login);
     apiRouter.route('/users/update').put(userController.update);
+    apiRouter.route('/users/').get(userController.getUserProfile);
     //apiRouter.route('/users/logout').get(userController.logout);
 
     //Tasks Routes
