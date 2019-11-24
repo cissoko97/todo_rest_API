@@ -9,13 +9,17 @@ exports.router = (function () {
     //Users routes
     apiRouter.route('/users/register').post(userController.register);
     apiRouter.route('/users/login').post(userController.login);
-    apiRouter.route('/users/update').put(userController.update);
+    //apiRouter.route('/users/update').put(userController.update);
+    apiRouter.route('/users/').get(userController.getUserProfile);
     //apiRouter.route('/users/logout').get(userController.logout);
 
     //Tasks Routes
-    //apiRouter.route('/tasks/save').post(taskController.save);
-    //apiRouter.route('/tasks/delete/:id').get(taskController.delete);
-    //apiRouter.route('/tasks/update').get(taskController.update);
+    apiRouter.route('/tasks/new').post(taskController.createTask);
+    apiRouter.route('/tasks/list').get(taskController.listTask);
+    apiRouter.route('/tasks/').get(taskController.paginateTask)
+    apiRouter.route('/tasks/update').put(taskController.updateTask);
+    apiRouter.route('/tasks/lock').put(taskController.lockTask);
+    apiRouter.route('/tasks/delete').delete(taskController.deleteTask);
 
     //Return router configuration
     return apiRouter;
