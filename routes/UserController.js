@@ -1,110 +1,97 @@
 //importation des paquets
 const bcrypt = require('bcrypt');
-const models = require('../models')
+const models = require('../models');
+const jwtUtils = require('../utils/jwt.utils');
+const MAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const PASSWORD_REGEX = /(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{6,15})$/;
+const TAG = 'USERCONTROLLER';
 
 module.exports = {
-
-    gethome: (req, res) => {
-        if (req.session.user) {
-            models.Product.findAll({
-                where: {
-                    UserId: req.session.user.id
-                }
-            }).then(result => {
-                console.log('List products', JSON.stringify(result, null, 4));
-                res.status(201).render('home.ejs', { user: req.session.user, products: result });
-            }).catch(err => {
-                console.error('Fetch All Error', err);
-            })
-        }
-        else {
-            console.log('user session', req.session.user)
-            res.redirect('/api/');
-        }
-    },
-
     register: function (req, res) {
-        console.log(`Register function`);
-        errors = {}
-        const newuser = {
-            name: req.body.name,
-            email: req.body.email,
-            password: req.body.password,
-            password_confirm: req.body.password_confirm
+        console.log(TAG, `Register function`);
+        //params
+        var user = {}
+        user.name = req.body.name;
+        user.email = req.body.email;
+        user.password = req.body.password;
+        user.phone = req.body.phone;
+        user.isadmin = 0;
+        console.log(TAG, JSON.stringify(user, null, 4));
+        console.log(TAG + ' Body', JSON.stringify(req.body, null, 4));
+
+        if (user.name == null || user.email == null || user.password == null || user.phone == null) {
+            return res.status(400).json({ 'error': 'missing parameters' });
         }
 
-        models.User.findOne({
-            where: {
-                email: newuser.email
-            }
-        }).then(result => {
-            if (result) {
-                errors.email = 'email is already used'
-                res.render('register.ejs', { user: newuser, error: errors })
-            } else {
-                if (newuser.password === newuser.password_confirm) {
-                    delete newuser.password_confirm;
-                    bcrypt.hash(newuser.password, 5).then(hasher => {
-                        newuser.password = hasher;
-                        models.User.create(newuser).then(user => {
-                            req.session.user = user;
-                            res.status(201).redirect('/api/home');
+        if (!PASSWORD_REGEX) {
+            return res.status(400).json({ 'error': 'Incorrect value for password' })
+        }
+
+        if (!MAIL_REGEX) {
+            return res.status(400).json({ 'error': 'Incorrect value for email' })
+        }
+
+        if (user.name.length <= 4 || user.name.length >= 15) {
+            return res.status(400).json({ 'error': 'wrong name (most be length 5 - 14)' })
+        }
+        models.User
+            .findOne({
+                attributes: ['email'],
+                where: { email: user.email }
+            })
+            .then(userfound => {
+                if (!userfound) {
+                    bcrypt.hash(user.password, 5).then(hasher => {
+                        user.password = hasher;
+                        models.User.create(user).then(newuser => {
+                            return res.status(201).json({ 'user': newuser });
                         }).catch(err => {
-                            console.log('Error', err);
+                            return res.status(500).json({ 'error': 'cannot add user' });
                         })
                     }).catch(error => {
-                        console.log('Error bcrypt pass', error)
+                        return res.status(500).json({ 'error': 'bcrypt error  ' });
                     })
                 } else {
-                    errors.password = 'password mismatch';
-                    res.render('register.ejs', { user: newuser, error: errors })
+                    return res.status(409).json({ 'error': 'user already exist' });
                 }
-            }
-        }).catch(err => {
-            console.log('registration Error', err);
-        })
+            })
+            .catch(err => {
+                return res.status(500).json({ 'error': 'unable to verify user' });
+            });
     },
 
     login: function (req, res) {
-        console.log(`login function`);
-        params = {};
-        errors = {};
-        params.email = req.query.email;
-        params.password = req.query.password;
+        console.log(TAG, `login function`);
+        var user = {};
+        user.email = req.body.email;
+        user.password = req.body.password;
+        if (user.email == null || user.password == null) {
+            return res.status(400).json({ 'error': 'missing parameters' })
+        }
         models.User.findOne({
-            where: {
-                email: params.email,
-            }
-        }).then(result => {
-            if (result) {
-                bcrypt.compare(params.password, result.password).then(same => {
+            where: { email: user.email }
+        }).then(userfound => {
+            if (userfound) {
+                bcrypt.compare(user.password, userfound.password).then(same => {
                     if (same) {
-                        req.session.user = result;
-                        res.status(201).redirect('/api/home');
+                        res.status(200).json({
+                            'userId': userfound.id,
+                            'token': jwtUtils.generateTokenForUser(userfound)
+                        });
                     } else {
-                        errors.password = "Incorrect password"
-                        res.status(201).render('login.ejs', { errors, params });
+                        res.status(403).json({ 'error': 'Incorrect password in comparaison' });
                     }
                 }).catch(err => {
-                    console.log('Login error ', 'Something when wrong')
+                    res.status(500).json({ 'error': 'Incorrect password' });
                 })
             } else {
-                params.email = 'email not found';
-                res.status(201).render('login.ejs', { errors, params });
+                return res.status(404).json({ 'error': 'user not exist in DB' })
             }
         }).catch(err => {
-            console.log('Error', err);
+            return res.status(500).json({ 'error': 'enable to verify user' })
         })
     },
     update: function () {
-        console.log(`update function`);
-    },
-    logout: (req, res) => {
-        if (req.session.user) {
-            req.session.user = null;
-            res.status(201).render('login.ejs', { message: 'Bonjour je vais bien', rien: 'Encore un de plus' });
-        } else {
-            res.status(201).render('login.ejs', { message: 'Bonjour je vais bien', rien: 'Encore un de plus' });
-        }
+        console.log(TAG, `update function`);
     }
 }

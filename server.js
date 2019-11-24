@@ -1,7 +1,7 @@
 //TODO require express for route manager
 var express = require('express');
 //TODO require body parser for 
-var body = require('body-parser');
+var bodyParser = require('body-parser');
 //TODO require package for cross origin 
 var cors = require('cors');
 //routes importation 
@@ -14,8 +14,8 @@ const HOST = 'localhost';
 var app = express();
 
 app.use(cors())
-    .use(body.json())
-    .use(body.urlencoded({ extended: false }))
+    .use(bodyParser.json())
+    .use(bodyParser.urlencoded({ extended: true }))
     .use('/api/', routes)
     .listen(PORT, HOST, function () {
         console.log(`serveur start on ${HOST}:${PORT}`);
