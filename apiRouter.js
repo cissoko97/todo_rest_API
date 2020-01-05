@@ -1,4 +1,4 @@
-//importation 
+//importation
 var express = require('express');
 var userController = require('./routes/UserController');
 var taskController = require('./routes/TaskController');
@@ -19,8 +19,9 @@ exports.router = (function () {
     apiRouter.route('/tasks/').get(taskController.paginateTask)
     apiRouter.route('/tasks/update').put(taskController.updateTask);
     apiRouter.route('/tasks/lock').put(taskController.lockTask);
-    apiRouter.route('/tasks/delete').delete(taskController.deleteTask);
 
+    apiRouter.route('/tasks/delete').delete(taskController.deleteTask);
+    apiRouter.route('/tasks/:id/add/children').post(taskController.addChildTask)
     //Return router configuration
     return apiRouter;
 })();

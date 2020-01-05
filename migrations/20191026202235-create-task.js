@@ -16,6 +16,14 @@ module.exports = {
           key: 'id'
         }
       },
+      parentId: {
+        allowNull: true,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Tasks',
+          key: 'id'
+        }
+      },
       label: {
         type: Sequelize.STRING
       },
