@@ -5,11 +5,11 @@ const JWT_SIGN_SECRET = 'mon super mot pour masquer mes données';
 module.exports = {
     generateTokenForUser: function (userData) {
         return jwt.sign({
-            userId: userData.id,
-            isAdmin: userData.isadmin
-        },
+                userId: userData.id,
+                isAdmin: userData.isadmin
+            },
             JWT_SIGN_SECRET,
-            { expiresIn: '1h' }
+            {expiresIn: '1h'}
         )
     },
 
@@ -17,7 +17,7 @@ module.exports = {
         return (authorization != null) ? authorization.replace('Bearer ', '') : null;
     },
 
-    getUserId: function (authorization) {
+    getUserId: function (authorization, res) {
         var userId = -1;
         var token = module.exports.parseAuthorization(authorization);
         if (token != null) {
@@ -28,6 +28,9 @@ module.exports = {
             } catch (err) {
 
             }
+        }
+        if (userId === -1) {
+            return res.status(401).json({'error': 'wrong Token'})
         }
         return userId;
     }

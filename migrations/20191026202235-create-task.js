@@ -22,7 +22,9 @@ module.exports = {
         references: {
           model: 'Tasks',
           key: 'id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       label: {
         type: Sequelize.STRING

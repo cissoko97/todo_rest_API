@@ -18,5 +18,5 @@ app.use(cors())
     .use(bodyParser.urlencoded({ extended: true }))
     .use('/api/', routes)
     .listen(PORT, HOST, function () {
-        console.log(`serveur start on ${HOST}:${PORT}`);
+        console.log(`Server start on ${HOST}:${PORT}`);
     });

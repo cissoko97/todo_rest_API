@@ -8,7 +8,7 @@
   },
   "test": {
     "dialect": "sqlite",
-    "storage": "data/test-db.sqlite3"
+    "storage": "./data/test-db.sqlite3"
   },
   "production": {
     "username": "root",
