@@ -1,6 +1,6 @@
 //importation
 var jwtUtils = require('../utils/jwt.utils')
-var models = require('../models');
+var models = require('../database/models');
 
 //Declaration des constantes utilisée dans le controller
 const TITLE_LIMIT_LENGTH = 7;
@@ -17,9 +17,8 @@ module.exports = {
         /**
          * @TODO
          */
-            //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
+        //getting auth header
+        var userId = req.userId
 
         //get Params
         var label = req.body.label;
@@ -32,19 +31,19 @@ module.exports = {
         //*return res.status(200).json({ dateLine });
 
         if (label == null || description == null)
-            return res.status(400).json({'error': 'missing parameters'})
+            return res.status(400).json({ 'error': 'missing parameters' })
         if (label.length < TITLE_LIMIT_LENGTH || description.length < DESCRIPTION_LIMIT_LENGTH)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
         if (priority > PRIORITY_LIMIT_MAX || priority < PRIORITY_LIMIT_MIN)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
 
         //TODO test if dateLine is valide (not before date of that day)
         models.User.findOne({
             attributes: ['id', 'name'],
-            where: {id: userId}
+            where: { id: userId }
         }).then(userFound => {
             if (!userFound) {
-                return res.status(400).json({'error': 'user not found'});
+                return res.status(400).json({ 'error': 'user not found' });
             }
 
             models.Task.create({
@@ -55,12 +54,12 @@ module.exports = {
                 status: status,
                 dateLine: dateLine
             }).then(task => {
-                return res.status(201).json(task);
+                return res.status(201).json({ ...task.dataValues });
             }).catch(err => {
-                return res.status(401).json({'error': 'Unable to create Task'});
+                return res.status(401).json({ 'error': 'Unable to create Task' });
             })
         }).catch(err => {
-            return res.status(500).json({'error': 'Unable to found User'})
+            return res.status(500).json({ 'error': 'Unable to found User' })
         })
     },
 
@@ -70,22 +69,14 @@ module.exports = {
      * @param {*} res
      */
     listTask: function (req, res) {
-        /**
-         * @TODO
-         */
-            //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var id = jwtUtils.getUserId(headerAuth);
-
+        userId = req.userId;
         models.Task.findAll({
-            // attributes: ['id', 'name', '', ''],
-            where: {userId: id}
+            // attributes: ['id', 'label', 'description', 'priority'],
+            where: { userId, parentId: null }
         }).then(tasks => {
-            if (!tasks)
-                return res.status(400).json({'error': 'not found task for user'})
             return res.status(200).json(tasks);
         }).catch(err => {
-            return res.status(500).json({'error': 'unable to fecth tasks for user'})
+            return res.status(500).json({ 'error': 'unable to fecth tasks for user' })
         })
     },
 
@@ -98,30 +89,30 @@ module.exports = {
         /**
          * @TODO
          */
-            //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
+        //getting auth header
+
+        var userId = req.userId;
 
         //getting params
         taskId = req.body.id;
 
         models.Task.findOne({
-            where: {id: taskId}
+            where: { id: taskId }
         }).then(task => {
             if (!task) {
-                return res.status(400).json({'error': 'Task not exist in DB'})
+                return res.status(400).json({ 'error': 'Task not exist in DB' })
             }
             if (task.UserId != userId)
-                return res.status(404).json({'error': 'You are not avalaible to lock this task'})
+                return res.status(404).json({ 'error': 'You are not avalaible to lock this task' })
             task.update({
                 status: 1,
             }).then(task => {
                 return res.status(201).json(task)
             }).catch(err => {
-                return res.status(500).json({'error': 'Cannot lock Task'})
+                return res.status(500).json({ 'error': 'Cannot lock Task' })
             })
         }).catch(err => {
-            return res.status(500).json({'error': 'Unable to found Task'})
+            return res.status(500).json({ 'error': 'Unable to found Task' })
         })
     },
 
@@ -134,35 +125,35 @@ module.exports = {
         /**
          * @TODO
          */
-            //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
+        //getting auth header
+
+        var userId = req.userId;
 
         //getting params
         taskId = req.body.id;
         //
         models.Task.findOne({
-            where: {id: taskId}
+            where: { id: taskId }
         }).then(task => {
             if (!task) {
-                return res.status(404).json({'error': 'task not exist in DB'});
+                return res.status(404).json({ 'error': 'task not exist in DB' });
             }
             if (task.UserId != userId) {
-                return res.status(403).json({'error': 'You are not ability to delete this task'})
+                return res.status(403).json({ 'error': 'You are not ability to delete this task' })
             }
 
             task.destroy({
-                where: {id: task.id}
+                where: { id: task.id }
             }).then(task => {
                 console.log('response', JSON.stringify(task, null, 4))
-                return res.status(201).json({'success': 'operation success'})
+                return res.status(201).json({ 'success': 'operation success' })
             }).catch(err => {
                 console.error(err)
-                return res.status(500).json({'error': 'Cannot delete Task'})
+                return res.status(500).json({ 'error': 'Cannot delete Task' })
             });
         }).catch(err => {
             console.log('error', err)
-            return res.status(500).json({'error': 'Unable to found Task'})
+            return res.status(500).json({ 'error': 'Unable to found Task' })
         });
     },
 
@@ -175,11 +166,7 @@ module.exports = {
         /**
          * @TODO
          */
-            //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
-
-
+        var userId = req.userId
         let param = {};
         //getting params
         taskId = req.body.id;
@@ -190,27 +177,27 @@ module.exports = {
         param.status = req.body.status;
 
         if (param.label == null || param.description == null)
-            return res.status(400).json({'error': 'missing parameters'})
+            return res.status(400).json({ 'error': 'missing parameters' })
 
         if (param.label.length < TITLE_LIMIT_LENGTH || param.description.length < DESCRIPTION_LIMIT_LENGTH)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
 
         if (param.priority > PRIORITY_LIMIT_MAX || param.priority < PRIORITY_LIMIT_MIN)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
 
         if (param.status != 0 && param.status != 1)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
 
         //TODO test if param.dateLine is valide (not before date of that day)
 
         models.Task.findOne({
-            where: {id: taskId}
+            where: { id: taskId }
         }).then(task => {
             if (!task) {
-                return res.status(400).json({'error': 'task not exist in DB'});
+                return res.status(400).json({ 'error': 'task not exist in DB' });
             }
             if (task.UserId != userId) {
-                return res.status(403).json({'error': 'You are not ability to update this task'})
+                return res.status(403).json({ 'error': 'You are not ability to update this task' })
             }
 
             task.update({
@@ -221,10 +208,10 @@ module.exports = {
             }).then(task => {
                 return res.status(201).json(task)
             }).catch(err => {
-                return res.status(500).json({'error': 'Cannot update Task'})
+                return res.status(500).json({ 'error': 'Cannot update Task' })
             });
         }).catch(err => {
-            return res.status(500).json({'error': 'Unable to found Task'})
+            return res.status(500).json({ 'error': 'Unable to found Task' })
         });
     },
 
@@ -242,8 +229,8 @@ module.exports = {
         console.log(req);
 
         //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
+
+        var userId = req.userId;
 
         //get params to send on DB
         var fields = req.query.fields;
@@ -258,7 +245,7 @@ module.exports = {
             offset: (!isNaN(offset)) ? offset : null,
             where: {
                 parentId: null,
-                userId: userId
+                userId
             },
             include: [{
                 model: models.User,
@@ -270,11 +257,11 @@ module.exports = {
             }]
         }).then(tasks => {
             if (tasks)
-                return res.status(200).json({tasks});
+                return res.status(200).json({ tasks });
             else
-                return res.status(404).json({'error': 'tasks not found'})
+                return res.status(404).json({ 'error': 'tasks not found' })
         }).catch(err => {
-            return res.status(500).json({'error': 'invalid fields'})
+            return res.status(500).json({ 'error': 'invalid fields' })
         })
     },
 
@@ -291,9 +278,9 @@ module.exports = {
          * if all test are Ok make add of child task and redirect back je vous aimes bien je ne sais pas enore
          */
 
-            //getting auth header
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
+        //getting auth header
+
+        var userId = req.userId
 
         //get Parameter from req.body
 
@@ -310,24 +297,24 @@ module.exports = {
         //Control parameter
 
         if (label == null || description == null)
-            return res.status(400).json({'error': 'missing parameters'})
+            return res.status(400).json({ 'error': 'missing parameters' })
         if (label.length < TITLE_LIMIT_LENGTH || description.length < DESCRIPTION_LIMIT_LENGTH)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
         if (priority > PRIORITY_LIMIT_MAX || priority < PRIORITY_LIMIT_MIN)
-            return res.status(400).json({'error': 'Invalid parameters'})
+            return res.status(400).json({ 'error': 'Invalid parameters' })
 
 
         models.Task.findOne({
-            where: {id: parentId}
+            where: { id: parentId }
         }).then(task => {
             if (!task) {
-                return res.status(404).json({'error': 'tasks not found'})
+                return res.status(404).json({ 'error': 'tasks not found' })
             }
             if (task.status) {
-                return res.status(403).json({'error': 'forbidden access'})
+                return res.status(403).json({ 'error': 'forbidden access' })
             }
             if (task.UserId != userId) {
-                return res.status(403).json({'error': 'forbidden access'})
+                return res.status(403).json({ 'error': 'forbidden access' })
             }
             models.Task.create({
                 UserId: userId,
@@ -340,21 +327,17 @@ module.exports = {
             }).then(newTask => {
                 return res.status(201).json(newTask)
             }).catch(err => {
-                return res.status(401).json({'error': 'Unable to create Task'});
+                return res.status(401).json({ 'error': 'Unable to create Task' });
             });
         }).catch(err => {
-            return res.status(404).json({'error': 'tasks not found'})
+            return res.status(404).json({ 'error': 'tasks not found' })
         })
     },
 
     getTaskById: function (req, res) {
         const TAG = 'getTaskById';
         //getting auth header
-
-        console.log(TAG);
-
-        var headerAuth = req.headers['authorization'];
-        var userId = jwtUtils.getUserId(headerAuth, res);
+        var userId = req.userId
 
         var id = req.params.id;
         models.Task;
@@ -365,10 +348,14 @@ module.exports = {
             }
         }).then(tasks => {
             console.table(tasks);
-            return res.status(201).json({tasks});
+            return res.status(201).json({ tasks });
         }).catch(err => {
-            return res.status(500).json({err})
+            return res.status(500).json({ err })
         });
 
+    },
+    rien: (el) => {
+
+        console.log(el, 'fonction rien');
     }
 }
