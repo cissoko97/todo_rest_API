@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-
-const JWT_SIGN_SECRET = 'mon super mot pour masquer mes données';
+const envs = require('./config')
 
 module.exports = {
     generateTokenForUser: function (userData) {
@@ -8,7 +7,7 @@ module.exports = {
             userId: userData.id,
             isAdmin: userData.isadmin
         },
-            JWT_SIGN_SECRET,
+            envs.API_KEY,
             { expiresIn: '1h' }
         )
     },
@@ -23,7 +22,7 @@ module.exports = {
         console.log('Verify', token)
         if (token) {
             try {
-                jwtResponse = jwt.verify(token, JWT_SIGN_SECRET);
+                jwtResponse = jwt.verify(token, envs.API_KEY);
                 if (jwtResponse) {
                     userId = jwtResponse.userId;
                 }
@@ -42,7 +41,7 @@ module.exports = {
         let token = mreq.headers['authorization'];
         if (token != null) {
             try {
-                jwtToken = jwt.verify(token, JWT_SIGN_SECRET);
+                jwtToken = jwt.verify(token, envs.API_KEY);
                 if (jwtToken != null)
                     userId = jwtToken.userId;
             } catch (err) {

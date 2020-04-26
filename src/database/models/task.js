@@ -9,9 +9,16 @@ module.exports = (sequelize, DataTypes) => {
     dateLine: DataTypes.DATE
   }, {});
   Task.associate = function (models) {
-    // associations can be defined here
-    Task.belongsTo(models.User);
-    Task.hasMany(models.Task, { foreignKey: 'parentId', as: 'sub_tasks', onDelete: 'CASCADE', hooks: true });
+    // associations can be defined here , as: 'sub_tasks'
+    Task.belongsTo(models.User , {
+      as: 'user'
+    });
+    Task.hasMany(models.Task, {
+      foreignKey: 'parentId',
+      as: 'tasks',
+      onDelete: 'CASCADE',
+      hooks: true
+    });
   };
   return Task;
 };

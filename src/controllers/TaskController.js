@@ -94,7 +94,7 @@ module.exports = {
         var userId = req.userId;
 
         //getting params
-        taskId = req.body.id;
+        taskId = req.params.id;
 
         models.Task.findOne({
             where: { id: taskId }
@@ -103,11 +103,11 @@ module.exports = {
                 return res.status(400).json({ 'error': 'Task not exist in DB' })
             }
             if (task.UserId != userId)
-                return res.status(404).json({ 'error': 'You are not avalaible to lock this task' })
-            task.update({
+                return res.status(401).json({ 'error': 'You are not avalaible to lock this task' })
+            return task.update({
                 status: 1,
-            }).then(task => {
-                return res.status(201).json(task)
+            }).then(taskLock => {
+                return res.status(204).json(taskLock)
             }).catch(err => {
                 return res.status(500).json({ 'error': 'Cannot lock Task' })
             })
@@ -130,7 +130,8 @@ module.exports = {
         var userId = req.userId;
 
         //getting params
-        taskId = req.body.id;
+        taskId = req.params.id;
+        console.log('taskId', taskId);
         //
         models.Task.findOne({
             where: { id: taskId }
@@ -139,14 +140,13 @@ module.exports = {
                 return res.status(404).json({ 'error': 'task not exist in DB' });
             }
             if (task.UserId != userId) {
-                return res.status(403).json({ 'error': 'You are not ability to delete this task' })
+                return res.status(401).json({ 'error': 'You are not ability to delete this task' })
             }
 
-            task.destroy({
+            return task.destroy({
                 where: { id: task.id }
             }).then(task => {
-                console.log('response', JSON.stringify(task, null, 4))
-                return res.status(201).json({ 'success': 'operation success' })
+                return res.status(204).json({ 'success': 'operation success' })
             }).catch(err => {
                 console.error(err)
                 return res.status(500).json({ 'error': 'Cannot delete Task' })
@@ -169,7 +169,7 @@ module.exports = {
         var userId = req.userId
         let param = {};
         //getting params
-        taskId = req.body.id;
+        taskId = req.params.id;
         param.label = req.body.label;
         param.description = req.body.description;
         param.priority = parseInt(req.body.priority);
@@ -197,16 +197,16 @@ module.exports = {
                 return res.status(400).json({ 'error': 'task not exist in DB' });
             }
             if (task.UserId != userId) {
-                return res.status(403).json({ 'error': 'You are not ability to update this task' })
+                return res.status(401).json({ 'error': 'You are not ability to update this task' })
             }
 
-            task.update({
+            return task.update({
                 label: param.label,
                 description: param.description,
                 priority: param.priority,
                 status: param.status
-            }).then(task => {
-                return res.status(201).json(task)
+            }).then(update => {
+                return res.status(204).json();
             }).catch(err => {
                 return res.status(500).json({ 'error': 'Cannot update Task' })
             });
@@ -225,9 +225,7 @@ module.exports = {
          * @TODO
          */
         const TAG = 'paginateTask';
-        console.log('TaskController', TAG)
-        console.log(req);
-
+        console.log('TaskController', req.query)
         //getting auth header
 
         var userId = req.userId;
@@ -239,9 +237,10 @@ module.exports = {
         var order = req.query.order;
 
         models.Task.findAll({
-            order: [(order != null) ? order.split(':') : ['status', 'ASC'], ['priority', 'DESC']],
+            //['createAt', 'ASC'], ['priority', 'DESC']
+            order: [(order != null) ? order.split(';').map(value => value.split(':')) : ['id', 'ASC']],
             attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
-            limit: (!isNaN(limit)) ? limit : 5,
+            limit: (!isNaN(limit)) ? limit : null,
             offset: (!isNaN(offset)) ? offset : null,
             where: {
                 parentId: null,
@@ -249,17 +248,15 @@ module.exports = {
             },
             include: [{
                 model: models.User,
-                attributes: ['name', 'email']
+                attributes: ['name', 'email'],
+                as: 'user'
             }, {
                 model: models.Task,
                 attributes: ['id', 'label', 'description', 'dateLine', 'priority', 'status'],
-                as: 'sub_tasks'
+                as: 'tasks'
             }]
         }).then(tasks => {
-            if (tasks)
-                return res.status(200).json({ tasks });
-            else
-                return res.status(404).json({ 'error': 'tasks not found' })
+            return res.status(200).json(tasks);
         }).catch(err => {
             return res.status(500).json({ 'error': 'invalid fields' })
         })
@@ -316,7 +313,7 @@ module.exports = {
             if (task.UserId != userId) {
                 return res.status(403).json({ 'error': 'forbidden access' })
             }
-            models.Task.create({
+            return models.Task.create({
                 UserId: userId,
                 parentId: task.id,
                 label: label,

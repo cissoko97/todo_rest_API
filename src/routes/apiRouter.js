@@ -12,21 +12,21 @@ exports.router = (function () {
     apiRouter.route('/users/new').post(userController.register);
     apiRouter.route('/users/login').post(userController.login);
     //Users routes for simple CRUD
-    apiRouter.route('/users/:id').get(userController.getUserById);
-    apiRouter.route('/users/').put(userController.update);
-    apiRouter.route('/users/:id').delete(userController.delete);
-    apiRouter.route('/users/').get(userController.list)
+    apiRouter.route('/users/:id').get(checkAuthorization, userController.getUserById);
+    apiRouter.route('/users/').put(checkAuthorization, userController.update);
+    apiRouter.route('/users/:id').delete(checkAuthorization, userController.delete);
+    apiRouter.route('/users/').get(checkAuthorization, userController.list)
     //apiRouter.route('/users/logout').get(userController.logout);
 
     //Tasks routes for simple CRUD
-    apiRouter.route('/tasks/new').post(checkAuthorization, taskController.createTask); // new task
-    apiRouter.route('/tasks/list').get(checkAuthorization, taskController.listTask); //list task by authenticate user
-    apiRouter.route('/tasks/').get(checkAuthorization, taskController.paginateTask) //paginate task by authenticate USer
-    apiRouter.route('/tasks/update').put(checkAuthorization, taskController.updateTask); //Update Task 
-    apiRouter.route('/tasks/lock').put(checkAuthorization, taskController.lockTask); //lock a task to make it finish
-    apiRouter.route('/tasks/:id').get(checkAuthorization, taskController.getTaskById); // get Task By Id property
-    apiRouter.route('/tasks/delete').delete(checkAuthorization, taskController.deleteTask); // delete task
-    apiRouter.route('/tasks/:id/add/children').post(checkAuthorization, taskController.addChildTask) //add child task to parent.
+    apiRouter.route('/tasks/').post(checkAuthorization, taskController.createTask); // new task
+    //apiRouter.route('/tasks/').get(checkAuthorization, taskController.listTask); // list task by authenticate user
+    apiRouter.route('/tasks/').get(checkAuthorization, taskController.paginateTask) // paginate parent task for authenticate USer
+    apiRouter.route('/tasks/:id').put(checkAuthorization, taskController.updateTask); // Update Task 
+    apiRouter.route('/tasks/:id/lock').put(checkAuthorization, taskController.lockTask); // lock a task to make it finish
+    apiRouter.route('/tasks/:id').get(checkAuthorization, taskController.getTaskById); // get child task By Id property
+    apiRouter.route('/tasks/:id').delete(checkAuthorization, taskController.deleteTask); // delete task
+    apiRouter.route('/tasks/:id/child').post(checkAuthorization, taskController.addChildTask) // add child task to parent.
     //Return router configuration
     return apiRouter;
 })();

@@ -7,6 +7,7 @@
         "bcrypt": "^3.0.6",
         "body-parser": "^1.19.0",
         "cors": "^2.8.5",
+        "dotenv": "^8.2.0",
         "express": "^4.17.1",
         "jsonwebtoken": "^8.5.1",
         "multer": "^1.4.2",
@@ -15,10 +16,12 @@
         "sqlite3": "^4.1.0"
     },
     "devDependencies": {
+        "faker": "^4.1.0",
         "mocha": "^6.2.1",
         "nodemon": "^1.19.3"
     },
     "scripts": {
+        "migrate": "cd src/database && sequelize db:migrate --env 'test' && cd .. && cd ..",
         "dev": "nodemon src/server.js",
         "start": "node src/server.js",
         "test": "mocha"

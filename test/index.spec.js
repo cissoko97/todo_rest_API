@@ -12,7 +12,7 @@ before(() => {
 
 describe('Model persistance Test ', () => {
     describe('#UserRepository', () => {
-        it('#Create()', () => {
+        test('#Create()', () => {
 
         });
         it('#findAll()', () => {
@@ -23,17 +23,6 @@ describe('Model persistance Test ', () => {
     });
 })
 
-//     describe('#TaskRepository', () => {
-//         it('#Create()', () => {
-//         });
-//         it('#findAll()', () => {
-//         })
-//         it('#FindByUserId()', () => {
-//         })
-//     });
-// });
-
-// after(() => {
-//     console.log('after run all test');
-//     sequelize.close();
-// })
+after(() => {
+    sequelize.close();
+})

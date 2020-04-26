@@ -1,21 +1,18 @@
 'use strict';
-
+const envs = require('../../utils/config')
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || envs.NODE_ENV;
 const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
 
 let sequelize;
-// console.log('Configuration', config)
 if (config.use_env_variable) {
-  console.log('use .env', config.use_env_variable)
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
-  // console.log('don\'t use .env')config.database, config.username, config.password,
-  sequelize = new Sequelize(config);
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
 fs

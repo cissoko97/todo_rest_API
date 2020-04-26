@@ -1,17 +1,19 @@
-//TODO require express for route manager
-var express = require('express');
+const envs = require('./utils/config');
+//TODO: require express for route manager
+const express = require('express');
 //TODO require body parser for 
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 //TODO require package for cross origin 
-var cors = require('cors');
+const cors = require('cors');
 //routes importation 
-var routes = require('./routes/apiRouter').router;
-var uploadController = require('./controllers/uploadController');
-const PORT = process.env.PORT || 4500;
+const routes = require('./routes/apiRouter').router;
+const uploadController = require('./controllers/uploadController');
+
+const PORT = envs.PORT || 4555;
 const HOST = 'localhost';
 
 //var urlencodedParser = body.urlencoded({ extended: false });
-var app = express();
+const app = express();
 app
     .use(cors())
     .use(bodyParser.json())
