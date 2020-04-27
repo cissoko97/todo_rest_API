@@ -8,11 +8,10 @@ module.exports = {
     let amount = 10;
     let date = new Date()
     while (amount--) {
-      let password = bcrypt.hashSync('password', 10);
       data.push({
         name: faker.internet.userName(),
         email: faker.internet.email(),
-        password,
+        password: bcrypt.hashSync('password1234', 10),
         phone: faker.phone.phoneNumberFormat(),
         isadmin: faker.random.boolean(),
         createdAt: date,

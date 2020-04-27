@@ -3,10 +3,6 @@ var jwtUtils = require('../utils/jwt.utils')
 var models = require('../database/models');
 
 //Declaration des constantes utilisée dans le controller
-const TITLE_LIMIT_LENGTH = 7;
-const DESCRIPTION_LIMIT_LENGTH = 15;
-const PRIORITY_LIMIT_MAX = 5;
-const PRIORITY_LIMIT_MIN = 0
 module.exports = {
     /**
      * create a new task for a user
@@ -17,7 +13,7 @@ module.exports = {
         /**
          * @TODO
          */
-        //getting auth header
+        //getting authanticate user provided in the header
         var userId = req.userId
 
         //get Params
@@ -26,16 +22,6 @@ module.exports = {
         var dateLine = new Date(req.body.dateline);
         var priority = parseInt(req.body.priority);
         var status = 0;
-        //console.log('req', req.body);
-        //validation des parametres 
-        //*return res.status(200).json({ dateLine });
-
-        if (label == null || description == null)
-            return res.status(400).json({ 'error': 'missing parameters' })
-        if (label.length < TITLE_LIMIT_LENGTH || description.length < DESCRIPTION_LIMIT_LENGTH)
-            return res.status(400).json({ 'error': 'Invalid parameters' })
-        if (priority > PRIORITY_LIMIT_MAX || priority < PRIORITY_LIMIT_MIN)
-            return res.status(400).json({ 'error': 'Invalid parameters' })
 
         //TODO test if dateLine is valide (not before date of that day)
         models.User.findOne({
@@ -170,25 +156,21 @@ module.exports = {
         let param = {};
         //getting params
         taskId = req.params.id;
-        param.label = req.body.label;
-        param.description = req.body.description;
-        param.priority = parseInt(req.body.priority);
-        param.dateLine = new Date(req.body.dateLine);
-        param.status = req.body.status;
-
-        if (param.label == null || param.description == null)
-            return res.status(400).json({ 'error': 'missing parameters' })
-
-        if (param.label.length < TITLE_LIMIT_LENGTH || param.description.length < DESCRIPTION_LIMIT_LENGTH)
-            return res.status(400).json({ 'error': 'Invalid parameters' })
-
-        if (param.priority > PRIORITY_LIMIT_MAX || param.priority < PRIORITY_LIMIT_MIN)
-            return res.status(400).json({ 'error': 'Invalid parameters' })
-
-        if (param.status != 0 && param.status != 1)
-            return res.status(400).json({ 'error': 'Invalid parameters' })
-
-        //TODO test if param.dateLine is valide (not before date of that day)
+        if (req.body.label) {
+            param.label = req.body.label
+        }
+        if (req.body.description) {
+            param.description = req.body.description;
+        }
+        if (req.body.priority) {
+            param.priority = parseInt(req.body.priority);
+        }
+        if (req.body.dateline) {
+            param.dateLine = new Date(req.body.dateLine);
+        }
+        if (req.body.status) {
+            param.status = req.body.status;
+        }
 
         models.Task.findOne({
             where: { id: taskId }

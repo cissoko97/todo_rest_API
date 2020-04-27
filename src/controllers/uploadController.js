@@ -1,11 +1,11 @@
-const UPLOAD_DIR = 'public/'
+const envs = require('../utils/config');
 const uploadRoutes = require('express').Router();
 const multer = require('multer');
 const fs = require('fs')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, UPLOAD_DIR)
+        cb(null, envs.UPLOAD_DIR)
     },
     filename: function (req, file, cb) {
         // ${file.mimetype}
@@ -28,24 +28,27 @@ const upload = multer({
 
 uploadRoutes.route('/profile/').post(upload.single('avatar'), (req, res) => {
     console.log(req.file);
+    console.log(envs)
     let { name, email } = req.body;
     return res.status(201).json({ file: req.file, ...req.body })
 })
 
 uploadRoutes.route('/profile/:name').get((req, res) => {
     let { name } = req.params;
-    if (fs.existsSync(`${UPLOAD_DIR}${name}`)) {
-        let realPath = fs.realpathSync(`${UPLOAD_DIR}${name}`)
+    if (fs.existsSync(`${envs.UPLOAD_DIR}${name}`)) {
+        let realPath = fs.realpathSync(`${envs.UPLOAD_DIR}${name}`)
         return res.download(realPath, (err) => {
             console.error('Error during download')
+            return res.status(500).json(err.message)
         })
     } else {
         return res.status(404).json({ message: 'file not found' });
     }
 })
 
-uploadRoutes.route('/upload/file').post(upload.array('avatars', 4), (req, res) => {
-    res.status(201).json({ ...req.files, ...req.body });
+uploadRoutes.route('/upload/files/').post(upload.array('files', 4), (req, res) => {
+    let names = req.files.map(value => value.filename);
+    res.status(201).json(names);
 })
 
 module.exports = uploadRoutes;
