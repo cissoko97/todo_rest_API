@@ -4,7 +4,6 @@ const PASSWORD_REGEX = /(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{6,15})$/;
 module.exports = {
     authRegistrationValidator: (req, res, next) => {
         const { name, email, password, passwordConfirm, phone } = req.body;
-
         const errors = {}
         if (!email || !email.match(MAIL_REGEX))
             errors.email = 'Invalide fiels email.';

@@ -6,8 +6,8 @@ const bodyParser = require('body-parser');
 //TODO require package for cross origin 
 const cors = require('cors');
 //routes importation 
-const routes = require('./routes/apiRouter').router;
-const uploadController = require('./controllers/uploadController');
+const { apiRoutes } = require('./routes/apiRouter');
+const { uploadRoutes } = require('./controllers/uploadController');
 
 const PORT = envs.PORT || 4555;
 const HOST = 'localhost';
@@ -18,7 +18,7 @@ app
     .use(cors())
     .use(bodyParser.json())
     .use(bodyParser.urlencoded({ extended: true }))
-    .use('/api/', routes, uploadController)
+    .use('/api/', apiRoutes, uploadRoutes)
     .listen(PORT, HOST, function () {
         console.log(`Server start on ${HOST}:${PORT}`);
     });

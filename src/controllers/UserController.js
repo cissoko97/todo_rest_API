@@ -22,24 +22,8 @@ module.exports = {
         user.email = req.body.email;
         user.password = req.body.password;
         user.phone = req.body.phone;
-        console.log(TAG, JSON.stringify(user, null, 4));
-        console.log(TAG + ' Body', JSON.stringify(req.body, null, 4));
 
-        if (user.name == null || user.email == null || user.password == null || user.phone == null) {
-            return res.status(400).json({ 'error': 'missing parameters' });
-        }
-
-        if (!PASSWORD_REGEX) {
-            return res.status(400).json({ 'error': 'Incorrect value for password' })
-        }
-
-        if (!MAIL_REGEX) {
-            return res.status(400).json({ 'error': 'Incorrect value for email' })
-        }
-
-        if (user.name.length <= 4 || user.name.length >= 15) {
-            return res.status(400).json({ 'error': 'wrong name (most be length 5 - 14)' })
-        }
+        user.picture = (req.file) ? JSON.stringify(req.file.filename) : [];
         models.User
             .findOne({
                 attributes: ['email'],
@@ -52,6 +36,7 @@ module.exports = {
                         models.User.create(user).then(newuser => {
                             return res.status(201).json({ ...newuser.dataValues });
                         }).catch(err => {
+                            console.log('Can not', err.parent.sqlMessage)
                             return res.status(500).json({ 'error': 'cannot add user' });
                         })
                     }).catch(error => {
@@ -122,10 +107,11 @@ module.exports = {
     getUserProfile: function (req, res) {
         var userId = req.userId;
         models.User.findOne({
-            attributes: ['id', 'name', 'email', 'phone', 'isadmin', 'createdAt'],
+            attributes: ['id', 'name', 'email', 'phone', 'isadmin', 'picture', 'createdAt'],
             where: { id: userId }
         }).then(user => {
             if (user) {
+                user.dataValues.picture = JSON.parse(user.dataValues.picture)
                 return res.status(201).json({ ...user.dataValues });
             } else {
                 return res.status(404).json({ 'error': 'user not found' })

@@ -1,6 +1,8 @@
 //importation
-var jwtUtils = require('../utils/jwt.utils')
-var models = require('../database/models');
+const jwtUtils = require('../utils/jwt.utils');
+const models = require('../database/models');
+const { Op } = require('sequelize');
+
 
 //Declaration des constantes utilisée dans le controller
 module.exports = {
@@ -15,7 +17,6 @@ module.exports = {
          */
         //getting authanticate user provided in the header
         var userId = req.userId
-
         //get Params
         var label = req.body.label;
         var description = req.body.description;
@@ -333,8 +334,29 @@ module.exports = {
         });
 
     },
-    rien: (el) => {
+    attachFiles: (req, res) => {
+        const userId = req.userId;
+        const taskId = req.params.id;
+        const files = JSON.stringify(req.files.map(value => value.filename));
+        models.Task.findOne({
+            where: { id: taskId }
+        }).then(task => {
+            if (!task) {
+                return res.status(400).json({ 'error': 'task not exist in DB' });
+            }
+            if (task.UserId != userId) {
+                return res.status(401).json({ 'error': 'You are not ability to update this task' })
+            }
 
-        console.log(el, 'fonction rien');
+            return task.update({
+                files
+            }).then(update => {
+                return res.status(204).json(update);
+            }).catch(err => {
+                return res.status(500).json({ 'error': 'Cannot update Task' })
+            });
+        }).catch(err => {
+            return res.status(500).json({ 'error': 'Unable to found Task' })
+        });
     }
 }

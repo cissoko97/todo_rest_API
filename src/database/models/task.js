@@ -6,11 +6,12 @@ module.exports = (sequelize, DataTypes) => {
     //parentId: DataTypes.INTEGER,
     priority: DataTypes.INTEGER,
     status: DataTypes.BOOLEAN,
-    dateLine: DataTypes.DATE
+    dateLine: DataTypes.DATE,
+    files: DataTypes.JSON
   }, {});
   Task.associate = function (models) {
     // associations can be defined here , as: 'sub_tasks'
-    Task.belongsTo(models.User , {
+    Task.belongsTo(models.User, {
       as: 'user'
     });
     Task.hasMany(models.Task, {
