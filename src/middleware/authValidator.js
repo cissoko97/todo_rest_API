@@ -22,7 +22,6 @@ module.exports = {
             errors.phone = 'Must not be empty adnd must contains [9;12].'
         }
         if (Object.keys(errors).length > 0) {
-            console.log(errors)
             return res.status(400).json(errors)
         }
         next();
@@ -31,13 +30,12 @@ module.exports = {
         const { email, password } = req.body;
         const errors = {}
         if (!email || !email.match(MAIL_REGEX))
-            errors.email = 'Invalide fiels email';
+            errors.email = 'Invalide field email';
 
         if (!password || !password.match(PASSWORD_REGEX))
-            errors.password = 'invalide fiels password';
+            errors.password = 'invalide field password';
 
         if (Object.keys(errors).length > 0) {
-            console.log(errors)
             return res.status(400).json(errors)
         }
         next();

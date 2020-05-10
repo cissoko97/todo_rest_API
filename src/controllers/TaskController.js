@@ -219,28 +219,46 @@ module.exports = {
         var offset = parseInt(req.query.offset);
         var order = req.query.order;
 
-        models.Task.findAll({
+        Op.and
+        models.Task.findAndCountAll({
             //['createAt', 'ASC'], ['priority', 'DESC']
             order: [(order != null) ? order.split(';').map(value => value.split(':')) : ['id', 'ASC']],
             attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
             limit: (!isNaN(limit)) ? limit : null,
             offset: (!isNaN(offset)) ? offset : null,
             where: {
-                parentId: null,
-                userId
+                [Op.and]: {
+                    parentId: null,
+                    userId
+                }
             },
-            include: [{
-                model: models.User,
-                attributes: ['name', 'email'],
-                as: 'user'
-            }, {
-                model: models.Task,
-                attributes: ['id', 'label', 'description', 'dateLine', 'priority', 'status'],
-                as: 'tasks'
-            }]
+            include: [
+                // {
+                //     model: models.User,
+                //     attributes: ['name', 'email'],
+                //     as: 'user'
+                // },
+                {
+                    model: models.Task,
+                    attributes: ['id', 'label', 'description', 'dateLine', 'priority', 'status'],
+                    as: 'tasks'
+                }]
         }).then(tasks => {
-            return res.status(200).json(tasks);
+            // console.log(tasks)
+            let leftData = (tasks.count - (limit + offset));
+            let left = Math.sign(leftData) === -1 ? 0 : leftData;
+            let currentPage = (offset / limit) + 1
+            return res.status(200).json({
+                pages: Math.round(tasks.count / limit),
+                currentPage,
+                size: tasks.count,
+                previous: (currentPage === 1) ? null : currentPage - 1,
+                next: (left === 0) ? null : currentPage + 1,
+                left,
+                data: tasks.rows
+            });
         }).catch(err => {
+            console.log(err)
             return res.status(500).json({ 'error': 'invalid fields' })
         })
     },

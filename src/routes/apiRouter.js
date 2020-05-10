@@ -6,7 +6,6 @@ const { createTaskValidator, updateTaskValidator } = require('../middleware/task
 const { authRegistrationValidator, authLoginValidator } = require('../middleware/authValidator');
 const userController = require('../controllers/UserController');
 const taskController = require('../controllers/TaskController');
-// var { checkAuthorization } = require('./utils/jwt.utils')
 
 //Users routes for authentication
 apiRoutes.route('/users/getProfile').get(checkAuthorization, userController.getUserProfile); //
@@ -29,4 +28,6 @@ apiRoutes.route('/tasks/:id').get(checkAuthorization, taskController.getTaskById
 apiRoutes.route('/tasks/:id').delete(checkAuthorization, taskController.deleteTask); // delete task
 apiRoutes.route('/tasks/:id/child').post(checkAuthorization, taskController.addChildTask) // add child task to parent.
 apiRoutes.route('/tasks/:id/files').post(checkAuthorization, upload.array('files', 4), taskController.attachFiles) // add child task to parent.
+
+
 module.exports = { apiRoutes };
